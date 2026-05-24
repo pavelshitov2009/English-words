@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Flashcards">
+<title>English Flashcards</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Georgia,serif;background:#f7f4ef;color:#1a1a2e;min-height:100vh}
+button,input{font-family:Georgia,serif}
+::-webkit-scrollbar{display:none}
+.page{max-width:500px;margin:0 auto;padding:1.5rem 1rem 3rem}
+.page-center{max-width:500px;margin:0 auto;padding:2rem 1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+h1{font-size:22px;font-weight:600;color:#1a1a2e}
+h2{font-size:18px;font-weight:600;color:#1a1a2e}
+.label{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#7a7060}
+.muted{color:#7a7060}
+.card{background:#fff;border:1px solid #ddd8d0;border-radius:8px;padding:1.1rem 1.2rem}
+.card-study{background:#fff;border:1px solid #ddd8d0;border-radius:12px;padding:1.8rem 1.4rem;text-align:center;margin-bottom:1rem}
+.btn{border:none;border-radius:6px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:Georgia,serif;color:#fff}
+.btn-dark{background:#1a1a2e}
+.btn-green{background:#2a6e5a}
+.btn-blue{background:#1a6a8a}
+.btn-red{background:#c0392b}
+.btn-outline{background:transparent;color:#7a7060;border:1px solid #ddd8d0}
+.btn-full{width:100%;padding:13px;font-size:15px}
+.btn-small{font-size:12px;padding:6px 12px}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.2rem}
+.stat-box{background:#fff;border:1px solid #ddd8d0;border-radius:8px;padding:10px 6px;text-align:center}
+.stat-num{font-size:22px;font-weight:600}
+.stat-lbl{font-size:10px;color:#7a7060;letter-spacing:.07em;text-transform:uppercase}
+.topic-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:1.2rem}
+.topic-pill{flex-shrink:0;padding:5px 10px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:Georgia,serif;border:1.5px solid #ddd8d0;background:#fff;color:#1a1a2e}
+.topic-pill.active{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+.progress-bar{background:#ddd8d0;border-radius:3px;height:4px;margin-bottom:1.5rem}
+.progress-fill{background:#1a1a2e;height:100%;border-radius:3px;transition:width .3s}
+.result-ok{background:#e8f5f0;border:1.5px solid #a8d8c8;border-radius:8px;padding:10px;margin-bottom:1rem}
+.result-fail{background:#fdf0ee;border:1.5px solid #f0c4be;border-radius:8px;padding:10px;margin-bottom:1rem}
+.rate-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+.rate-btn{border:none;border-radius:6px;font-size:13px;padding:9px 4px;cursor:pointer;color:#fff;font-family:Georgia,serif;font-weight:600;line-height:1.4}
+.session-header{display:flex;justify-content:space-between;font-size:12px;color:#7a7060;margin-bottom:5px}
+input[type=text]{width:100%;font-size:16px;padding:10px 12px;border:2px solid #ddd8d0;border-radius:6px;outline:none;background:#fafaf8;font-family:Georgia,serif}
+input[type=text]:focus{border-color:#1a1a2e}
+input[type=range]{width:100%;accent-color:#2a6e5a}
+.field-label{font-size:11px;color:#7a7060;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+.word-list-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ddd8d0;font-size:13px}
+.divider{border-bottom:2px solid #1a1a2e;padding-bottom:1rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:flex-end}
+.new-badge{display:inline-block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:#e8e4dc;color:#7a7060;margin-bottom:10px}
+.info-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.info-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.info-box{background:#e8f5f0;border:1.5px solid #a8d8c8;border-radius:8px;padding:10px 14px;margin-top:.5rem;font-size:12px;color:#2a6e5a;line-height:1.6}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ── VOCABULARY ────────────────────────────────────────────────────────────────
+const W = [["a grave problem","серьезная проблема",5],["a mind like a sieve","память как решето",5],["a swollen arm","опухшая рука",4],["a witness","свидетель",3],["abundantly","обильно, изобильно",5],["abundantly clear","предельно ясно",5],["accelerator","педаль газа",11],["accepting","принимающий",5],["acquaintance","знакомый",5],["acute","острый, резкий, актуальный",4],["admission","вход, доступ",8],["advocacy","пропаганда",6],["ageing","старение",4],["agonising","мучительный",4],["alibi","алиби",3],["all is well that ends well","все хорошо, что хорошо кончается",1],["all of a sudden","внезапно",1],["All that he thinks about is that","Все, о чем он думает, это о том, что...",2],["All that I've done was that","Все, что я сделал, это то, что...",2],["All we ever did was","Все, что мы когда-либо делали, это...",2],["alluring","заманчевый, привлекательный",5],["almond","миндаль",10],["ancestor","предок",5],["angler","рыбак (любитель)",9],["apart from sth","кроме чего-то",2],["aptitude for sth","способность, склонность к чему-то",5],["aquatic","водный",7],["argumentative","любящий спорить / спорный",5],["arid desert","засушливая пустыня",7],["As I have understood you correctly","Как я правильно вас понял.",2],["as thin as a rake","худой как спичка",1],["assassination","политическое убийство",3],["at the stands","на трибунах",12],["at the weekend","на выходных",8],["at your disposal","к вашим услугам",2],["at your expense","за ваш счет",2],["attic","чердак",8],["attractive to the human eye","приятен глазу человека",5],["avid reader","заядлый читатель, книголюб",12],["bachelor","бакалавр, холостяк",6],["backup lights","фонари заднего хода",11],["bagpipes","волынка",12],["ban on marriage","запрет на свадьбы",1],["bay leaf","лавровый лист",10],["be popular with","быть популярным среди",5],["be said to have done sth","говорят, что что-то сделано кем-то",2],["beforehand","заранее",8],["belief","поверье, вера, убеждение",5],["beneficial effect","положительный эффект",6],["big talk","хвастовство",1],["bishop","епископ (католический)",3],["bitter enemies","заклятые враги",1],["blackmail","шантаж",3],["blanket cover","пододеяльник",8],["blasting","взрывной, место, где много активностей",5],["bleeding","кровотечение",4],["blemish","дефект, недостаток, пятно",4],["blocked up nose","заложенный нос",4],["blood vessels","кровеносные сосуды",4],["blunt teeth","тупые зубы",4],["boa constrictor","удав",9],["boarding school","школа-интернат",8],["boil","фурункул",4],["bough","ветвь, сук",9],["brake","педаль тормоза",11],["breeder","заводчик",9],["broken home","неполная, распавшаяся семья",8],["bruise","синяк",4],["bud","бутон, почка",9],["buds open up","почки раскрываются",7],["bumper","бампер",11],["bunch of grapes","гроздь винограда",10],["buoyant","бодрый, жизнерадостный, оживленный",5],["burglary","кража со взломом",3],["butt","окурок, задница",5],["by/in leaps and bounds","семимильными шагами, очень быстро",1],["camomile","ромашка",9],["canal","водный канал",7],["candy cane","карамельная трость",10],["candy floss","сладкая вата",10],["capital punishment / death penalty","смертная казнь",3],["carol","рождественская песня (религиозная)",12],["cashew","кешью",10],["caterpillar","гусеница",9],["cattle breeding","скотоводство",9],["cautious","осторожный, осмотрительный",5],["cell division","деление клетки",4],["cello","виолончель",12],["cereal","хлопья, злаки",10],["championship in sth","чемпионат по чему-либо",12],["chatty","болтливый",5],["cheerful","жизнерадостный, веселый",5],["Christmas balls","елочные шары",13],["clot","сгусток, тромб",4],["clutch","педаль сцепления",11],["cocoon","кокон",9],["cod","треска",9],["coincidence","совпадение",5],["commercial","рекламный ролик",13],["complete denial","полное отрицание",3],["concrete","бетон",7],["consequence","последствие",6],["consequently","следовательно",6],["content","довольный",5],["conventional","обычный, традиционный",5],["copper","медь",7],["cork","пробка",10],["corn flakes","кукурузные хлопья",10],["cosmopolitan","многонациональный",5],["costy","дорогой",5],["Cotton / thread","нить",10],["cotton wool","вата",8],["cough","кашель",4],["court hearing","судебное слушание",3],["court room","зал суда",3],["cover","покрывало",8],["crag","утес",7],["criterion","критерий",6],["criterion, criteria","критерий, критерии",6],["crops","урожай",7],["crucial","решающий, ключевой",5],["curable","излечимый",4],["curfew violation","нарушение комендантского часа",3],["cushion","диванная подушка",8],["cutlery","столовые приборы",8],["dazzling","ослепительный",5],["deception","обман, жульничество",3],["defendant","подсудимый, обвиняемый, ответчик",3],["deliberately","преднамеренно, умышленно, нарочно",3],["delighted","восхищенный, радостный",5],["dent","яма, впадина, выбоина / вмятина, впадина",13],["deprivation","лишение",5],["deterrent","сдерживающий / сдерживающий фактор, средство устрашения",3],["detriment","ущерб, вред",6],["detrimental","вредный, пагубный",6],["detrimental effect","пагубный эффект",6],["detrimental for my health","вредно для моего здоровья",6],["devastating","разрушительный",6],["digestion","пищеварение",4],["dill","укроп",10],["dilution","разбавление",7],["dipped","скакнул вниз",6],["disjointed","несвязный",5],["dislocated shoulder","вывихнутое плечо",4],["disorderly conduct","нарушение общественного порядка",3],["disposal of garbage","утилизация мусора",7],["dissatisfied with sth","недовольный чем-либо",5],["diverse","разнообразный",5],["diversity","разнообразие",6],["do you feel like swimming?","как насчет поплавать?",5],["dodgy","сомнительный, потенциально опасный (про место)",5],["dolphin","дельфин",9],["dough","тесто",10],["drab suburban landscape","унылый городской пейзаж",7],["drawback","недостаток, отрицательная сторона",5],["drought","засуха",7],["drowsy","сонный, вялый",5],["drug abuse","злоупотребление наркотиками",4],["ecstatic","вне себя от счастья",5],["efficient","эффективный",5],["embezzlement","хищение (крупное)",6],["emerald","изумруд",7],["emphasis","акцент, особое внимание",6],["erosion","разрушение, эрозия",7],["errand","поручение",13],["errands","поручения",13],["estate","недвижимость",8],["eve","канун",5],["evocative","вызывающий воспоминания, чувства",5],["excessive amount of sth","чрезмерное количество чего-либо",6],["exhaust-pipe","выхлопная труба",11],["exorbitant price","заоблачная цена",5],["expenditures","расходы",6],["expiring date of visa","дата истечения срока действия визы",5],["explicit","явный, точный, откровенный",6],["explicitly","ясно, недвусмысленно",5],["explosion","взрыв",7],["exquisite view","восхитительный вид",7],["extent","степень, мера",5],["eye-sight","зрение",4],["feeble plot","слабоватый сюжет",5],["fell and then levelled off","упал, а затем выровнялся",6],["fell gradually","падал постепенно",6],["fencing","фехтование",12],["fender","крыло автомобиля",11],["fennel","фенхель",10],["ferry","паром",11],["few and far between","слишком редкие, очень мало",1],["fillet of fish","филе рыбы",10],["financial gain","финансовая выгода",6],["fir","пихта, ель",9],["first and foremost","в первую очередь",1],["flea","блоха",9],["flew","полетел",13],["fluctuated","колеблющийся",6],["flute","флейта",12],["font","шрифт",12],["for a small fee","за небольшую плату",8],["forms of deception","формы обмана",3],["fourtunate coincedence","удачное совпадение",1],["fraud","мошенничество",6],["French windows","панорамные окна",8],["frightened","испуганный",5],["front","передний, перед",5],["frustrated","расстроенный, разочарованный",5],["fulfilling","полностью удовлетворенный / приносящий удовлетворение",5],["gain","прибыль",6],["gale-force wind","штормовой ветер",7],["garland","гирлянда",8],["garlic press","пресс для чеснока",10],["gingerbread man","пряничный человечек",10],["glands","железы, гланды",4],["glimmer of hope","проблеск надежды",1],["good or poor eye-sight","хорошее или плохое зрение",4],["got used to doing sth","привык делать что-либо",2],["gradual","постепенный, последовательный",5],["gradual preporation","постепенная подготовка",1],["grave","могила",13],["grueling hike","изнурительный поход",7],["grumpy","угрюмый, сердитый",5],["grumpy businessmen","сердитые бизнесмены",1],["guilt","вина",5],["guilty","виновный",5],["guinea pig","морская свинка, подопытный кролик",9],["gullet","пищевод",4],["habitat","среда обитания",9],["halibut","палтус",9],["handsaw","ножовка",8],["hardened cells","ороговевшие клетки",4],["harp","арфа",12],["harshly punished","сурово наказанный",3],["harvest","урожай",7],["hassle","барьер, преграда, препятствие, трудность",5],["having lived","прожив",2],["headlight","фара",11],["heavy sleeper","крепко спящий",4],["height","высота",8],["hiccough","икота",4],["hijacking","угон самолета",3],["hilarious","очень смешной, уморительный",5],["his bark is worse than his bite","Он больше лает, чем кусает",1],["hive","улей",9],["hoax","обман, розыгрыш",3],["holly","остролист",9],["hood","капот, капюшон",8],["horn","рог",13],["horseshoe","подкова",9],["hubcap","колпак колеса",11],["humbling","унизительный",5],["hurdle","препятствие, трудность",5],["I am hooked on","я подсел на",2],["I am not accustomed to doing that","я не привык делать это",2],["I assume","я предполагаю",2],["I don't mind opening the window","Я не против, чтобы открыть окно",2],["I enjoyed it immensely","Мне это очень понравилось",2],["I expect to have finished this by June","Я рассчитываю закончить это к июню",2],["I prone to think","Я склонен думать",2],["I saw him arrive","Я видел, как он приехал",2],["I strongly believe that","Я твердо верю, что",2],["I was disappointed to have missed him","Я был разочарован тем, что разминулся с ним",2],["I was dying from boredom","Я умирал со скуки",2],["I would love to be doing sth","Я бы сейчас с удовольствием занялся чем-то",2],["I'm looking forward to seeing it","Я с нетерпением жду возможности увидеть это",2],["idyllic spot","идиллическое местечко",7],["if you happen to be somewhere","если ты случайно окажешься где-нибудь",2],["implementation","реализация, выполнение, осуществление",6],["in a normal pace","в нормальном темпе",2],["in full swing","в самом разгаре",1],["in my opinion","по моему мнению",2],["in order not to bring sand","чтобы не занести песок",2],["in the vicinity of","в окрестности",2],["in vain","напрасно",2],["incentive","стимул",6],["incidence","заболеваемость (распространенность)",4],["incurable","неизлечимый",4],["indifference","безразличие",5],["indifferent","безразличный, равнодушный",5],["indigestion","несварение, растройство желудка",4],["informative","информативный",6],["inhabitants","жители, обитатели",5],["innocent","невиновный",5],["insane","безумный, сумасшедший, душевнобольной",5],["insolvency","неплатежеспособность",6],["insulting","оскорбительный, обидный (намеренно)",5],["interference","вмешательство (негативное)",5],["intervention","вмешательство",3],["intestine","кишечник",4],["intrepid traveller","бесстрашный путешественник",5],["it appeals to me","это привлекает меня",2],["it differs from","это отличается от",2],["it is alleged that","утверждается, что",2],["it is water under the bridge","что было, то прошло",1],["it seems to me that","мне кажется, что",2],["it was not done on purpose","это было сделано не специально",2],["It's a tricky question but","Это сложный вопрос, но",2],["jet lag","расстройство суточного биоритма в связи с дальним перелетом",5],["jigsaw","головоломка",13],["joint","сустав",4],["joint venture","совместное предприятие",6],["juvenile crimes","преступления несовершеннолетних",3],["kidnapping","похищение людей",3],["kitchen utensils","кухонная утварь",8],["lack of sth","недостаток чего-то",5],["ladle","половник",8],["lane","переулок",11],["lawn","газон, лужайка",8],["layout","макет / планировка",8],["layout of the space","поанировка пространства",8],["leaflet","листовка",8],["leg room","пространство для ног",8],["legally illiterate","юридически негоамотный",3],["legally literate","юридически грамотный",3],["libel","клевета",3],["license plate","номерной знак",8],["life imprisonment","пожизненное заключение",3],["life span","продолжительность жизни",4],["lifespan","продолжительность жизни",4],["light sleeper","чутко спящий",4],["linden","липа",9],["loitering","слоняться без дела",3],["long-term","долгосрочный",6],["longevity","долголетие",4],["louse-lice","вошь - вши",9],["lucrative","прибыльный, выгодный",6],["lunatic asylum","психбольница",4],["lungs","легкие",4],["luster","блеск",7],["lynching","самосуд, линчевание",3],["make hay while the sun shines","куй железо, пока горячо",1],["malachite","малахит",7],["manslaughter","непредумышленное убийство",3],["marsupial","сумчатый",9],["maternity","декрет",6],["may occur","может случиться, имеет место",13],["means of transport","виды транспорта",11],["memorable","запоминающийся",5],["mend shoes","чинить обувь",8],["merchant","торговец",6],["minefield","минное поле",5],["minor crimes","мелкие преступления",3],["miracle","чудо",5],["miserable","убогий, жалкий",5],["missile","ракета",3],["mistrail","аннулирование судебного процесса",3],["mixed thoughts","смешанные мысли",5],["moisture","влажность, сырость, влага",7],["mole","родинка",9],["monthly","ежемесячно",8],["motto","девиз, лозунг",13],["mountain ash","рябина",9],["mouth cavity","ротовая полость",4],["muddy","грязный",7],["mugging","уличный грабеж",3],["mummy","мумия",7],["murder","убийство",3],["mutton","баранина",10],["myriad","бесчисленный",13],["nail-file","пилочка для ногтей",8],["naive","наивный",5],["native","коренной житель, абориген",13],["nausea","тошнота",4],["nerve endings","нервные окончания",4],["nimble","проворный, ловкий, шустрый",5],["nomad","кочевник, бродяга, странник",7],["nothing in particular","ничего особенного",1],["nurture","воспитание, воспитывать",5],["nut","гайка",8],["o reverse into a parking space","парковаться задним ходом",11],["obedience","подчинение",5],["obedient","покорный, послушный",5],["obesity","ожирение",4],["oboe","гобой",12],["offender","обидчик, правонарушитель",3],["offensive","оскорбительный / обидный, оскорбительный",5],["on the spot","прямо на месте",5],["orchard","фруктовый сад",9],["oriental culture","восточная культура",5],["ostrich","страус",9],["out of curiosity","из любопытства",1],["out of the blue","как снег на голову",1],["outdated","устаревший, несовременный",5],["over the top","чересчур",5],["overawed","внушающий страх",5],["overcast sky","пасмурное небо",7],["overjoyed","вне себя от радости",5],["overrated","переоцененный",5],["overwhelmed","подавленный, сокрушенный",5],["pain in the neck","заноза в заднице",1],["parking lights","габаритные огни",11],["peacock","павлин",9],["pebble beach","галечный пляж",7],["peculiar","своеобразный",5],["peeler","овощечистка",8],["peer pressure","давление сверстников",5],["pending","в ожидании, зависающий",6],["perception","восприятие",5],["perjury","дача ложных показаний",3],["perks","льготы, привилегии",6],["perplexed","растерянный, озадаченный",5],["persistent","упорный, настойчивый",5],["personnel","персонал",6],["petal","лепесток",9],["pickpocketing","карманное воровство",3],["picturesque","живописный",5],["pillow-case","наволочка",8],["pitch","футбольное поле, подача",12],["pithiness","содержательность",6],["plant","растение, завод",8],["plough","плуг",8],["plummeted","резко упал",6],["poaching","браконьерство",3],["poles","лыжные палки",12],["pollen","пыльца",9],["polluted","загрязненный (об окружающей среде)",7],["poplar","тополь",9],["poster","афиша",8],["pot","горшок, кастрюля",8],["pot of tea","чайник чая",10],["precipitation","атмосферные осадки",7],["preparatory","подготовительный, предварительный",6],["priest","священник",3],["probation period","испытательный срок",6],["process","процесс",6],["profit","прибыль",6],["profitability","прибыльность",6],["profitable","прибыльный",6],["pros and cons","плюсы и минусы",6],["provokative","провокационный",13],["prudence","благоразумие",6],["prudent","благоразумный",6],["public Intoxication","пьянство в общественном месте",3],["pull an all-nighter","работать всю ночь",13],["pulp","мякоть",10],["purity","чистота",5],["quaint","причудливый",5],["questionnaire","анкета, опросный лист",6],["raccoon","енот",9],["ransom","выкуп",3],["rape","изнасилование",3],["rear window","заднее стекло",11],["reckless drivers","безответственные водители, лихачи",11],["recruitment","набор персонала",6],["refurbished","обставленный мебелью",13],["registration number","регистрационный номер",8],["reindeer","северный олень",9],["rejuvinated","помолодевший",13],["relay race","эстафета",12],["remained flat / stable","оставался стабильным",6],["remote","удаленный, дистанционный",5],["representative","представительный",6],["repulsive","отталкивающий",5],["resolution","решение (задачи, проблемы)",6],["rewarding","стоящий, полезный",6],["right for sth","право на что-то",6],["rink","каток, хоккейная площадка",12],["riveting","захватывающий",5],["rod","удочка",12],["roof","крыша",8],["roof rack","багажник на крыше",8],["rose gradually","рос постепенно",6],["rough","грубый, шероховатый",5],["rough sea","неспокойное море",7],["ruby","рубин",7],["rugged","грубый, шероховатый, прочный",5],["run down","уставший, обессиленный",5],["run out of sth (we've run out of milk)","что-то закончилось",13],["sack","мешок",8],["saffron","шафран",10],["salmon","лосось",9],["sample","образец",6],["sapling","молодое деревце",9],["scam","мошенничество",3],["scarlet ribbon","алая лента",5],["screen version","экранизация",12],["seal","тюлень",9],["secluded","уединённый, укромный",7],["sediments","осадки",7],["seedy","захудалый, может быть потенциально опасным (про место)",5],["self-esteem","самооценка",5],["serious crimes","тяжкие преступления",3],["serving and preserving","подача и хранение",10],["severe climate/disease","суровый климат/тяжелая болезнь",4],["severely upset stomach","сильное расстройство желудка",4],["shabby","потертый, пошарпанный, поношенный",5],["sharp pain in","острая боль в",4],["sharp sound","резкий звук",5],["shoplifting","воровство в магазинах",3],["sick and tired of","сыт по горло",1],["sick leaf","больничный",8],["side mirror","боковое зеркало",11],["simple assault","нападение без отягчающих обстоятельств",3],["skidding","скольжение, занос автомобиля на дороге",11],["sleep deprivation","лишение сна",4],["sleepless night","бессонная ночь",4],["slip of the tongue","оговорка",1],["smb is apt to be","кто-то склонен быть",2],["smuggling","контрабанда",3],["snail","улитка",9],["snoring","храп",4],["soared","резко взлетел",6],["solution to the problem","решение проблемы",6],["solvency","платежеспособность",6],["sophisticated machines","сложные машины",6],["source of encouragement","источник вдохновения",6],["spirit level","уровень (строительный)",8],["splitting headache","раскалывающая головная боль",4],["spoof story","выдуманная история",1],["sprout","росток",9],["spruse","ель",7],["squeamish","брезгливый, щепетильный",5],["staff turnover","текучесть кадров",6],["staircase","лестница",8],["stall","прилавок",8],["starvation","голод",4],["starve","голодать",4],["stem cells","стволовые клетки",4],["sth sorts itself out","что-то решается само собой",5],["sting","жало",13],["strait","пролив",7],["streaking","появление голым в общественном месте",3],["strength","сила, прочность",6],["string","струна, веревка",13],["string instrument","струнный инструмент",12],["stunning","потрясающий",5],["stunning views","потрясающие виды",7],["subliminal","подсознательный",5],["suitable for","подходящий для",5],["superstitious person","суеверный человек",5],["surge in sth","Всплеск чего-либо",7],["swallow","ласточка",9],["sweltering","душный, жаркий, знойный",5],["swirling water","водоворот воды",7],["swollen ankle","опухшая лодыжка",4],["tail light","задняя фара",11],["tailor","портной",8],["take aback","застать врасплох, поразить",5],["tamer","укротитель, дрессировщик",9],["temperate zone","умеренный пояс",7],["tempset","буря",7],["tensile","растяжимый, эластичный",7],["tension","напряжение",5],["terrestrial","земной",7],["terrible row","ужасная ссора",5],["testimony","свидетельские показания",3],["the base of the bottle","дно бутылки",13],["the case is taken to the court","дело передано в суд",3],["the judge will hear the case","судья рассмотрит дело",3],["the main breadwinner","главный кормилец",6],["the plot is based on real events","сюжет основан на реальных событиях",5],["the visa is expired","срок действия визы истек",13],["theft","кража / кража, воровство",3],["there is so much red tape","здесь полно бюрократии",6],["they barely make ends meet","они едва сводят концы с концами",6],["thick","густой",7],["thief","вор, грабитель",3],["thigh","бедро (hip)",4],["thorough","тщательный",5],["thought-provoking","заставляющий задуматься",12],["three days in a row","три дня подряд",1],["through","через",1],["tidal wave","цунами",7],["tie score / draw score","ничейный счет",13],["time-consuming","отнимающий много времени",6],["tinsel","мишура",8],["tipsy","подвыпивший",5],["tire","шина",11],["tissues","ткани организма, салфетки",4],["to a certain extent","до определенной степени",2],["to accompany","сопровождать",13],["to accuse of","обвинять в",3],["to accuse sb of v-ing","обвинять кого-то в...",2],["to achieve objects","достигать целей (бизнес)",6],["to acknowledge","признавать, подтверждать",6],["to acquire","приобретать, получать",6],["to admit (to) v-ing","признавать...",2],["to advise","советовать",6],["to allege","утверждать",3],["to alter","изменять, переделывать",6],["to apologise for v-ing","извиняться за...",2],["to argue until you're blue in the face","спорить до посинения",1],["to arm","вооружать",3],["to assault","нападать, использовать физическое насилие",3],["to attend the trial","присутствовать на суде",3],["to avert","предотвращать",3],["to bang a nail","забить гвоздь",13],["to be a wet blanket","быть занудой, душнилой",1],["to be accustomed to","быть привыкшим к",13],["to be aware of","быть осведомленным",13],["to be behind bars","быть за решеткой",1],["to be broke","быть на мели",1],["to be cluttered with","быть загроможденным / засраным чем-то",8],["to be confined","быть заключенным",4],["to be deprived of sth","быть лишенным чего-то",3],["to be discriminated with","подвергаться дискриминации со стороны",3],["to be down in the dumps","быть в подавленном настроении",1],["to be engrossed","быть поглощенным",5],["to be enrolled with","быть зачисленным в",8],["to be exposed to","подвергаться воздействию",13],["to be faithful","быть верным",5],["to be full of beans","быть полным энергии",1],["to be given the cold shoulder","встретить холодный примем",1],["to be grateful to smb for sth","быть благодарным кому-то за что-то",13],["to be green with envy","позеленеть от зависти",1],["to be ill","болеть",4],["to be in high demand of","быть востребованным среди",6],["to be in plaster","быть в гипсе",4],["to be in red","быть на мели, в долгах",6],["to be on cloud nine","быть на седьмом небе от счастья",1],["to be on trial","быть под следствием, судом",3],["to be polite to smb","быть вежливым с кем-то",13],["to be still on the flow","быть по-прежнему на плаву",6],["to be teem with sth","быть изобилующим чем-то",13],["to be through with sth or smb","закончить что-то делать, закончить отношения",13],["to be under the oath","быть под присягой",3],["to be yellow","быть трусом",1],["to bear","нести, вынашивать, родать",13],["to beat eggs","взбивать яйца",10],["to bend an elbow","согнуть логоть",1],["to bloom","цвести",7],["to blossom","цвести (и пахнуть)",7],["to blow sth up out of all proportion","делать из мухи слона, раздувать",1],["to boast","хвастаться",1],["to boast about v-ing","хвастаться о...",2],["to brake a promise","нарушить обещание",1],["to brew tea","заваривать чай",10],["to bring an association","вызывать ассоциацию",1],["to bring up children","воспитывать детей",13],["to bury","хоронить",13],["to bury the hatchet","зарыть топор войны",1],["to bury your head in the sand","прятать голову в песок",1],["to buzz about","суетиться, кружиться как пчелка",1],["to call off","отменять, откладывать, переносить",8],["to carve","вырезать",8],["to cause extensive damage","нанести серьезный ущерб",3],["to change your mind-set","изменить ваше мышление",6],["to charge smb with sth","обвинять кого-то в чем-то (до суда)",3],["to chip a tooth","сломать зуб",4],["to cite the citation","цитировать цитату",6],["to coincide","совпадать",13],["to collapse","рухнуть, развалиться",13],["to combine with sth","сочетать с чем-то",10],["to come as a bolt from the blue","случиться как гром среди ясного неба",1],["to come out of the soil","прорастать / выходить из почвы",7],["to comit suicide","совершить самоубийство",3],["to commit a crime","совершить преступление",3],["to complain to sb about v-ing","жаловаться кому-то о...",2],["to conduct a survey","проводить опрос",6],["to conduct an orchestra","дирижировать оркестром",12],["to confess the love to smb","приднаваться в любви кому-либо",13],["to congratulate on","поздравлять с",13],["to contract","сокращаться, уменьшаться",4],["to contract flu / virus","подхватить вирус, заразиться",4],["to contradict","противоречить",3],["to convey the information","передавать инофрмацию",6],["to convict","осуждать, признать виновным",3],["to convict smb of sth","обвинять кого-либо в чем-либо (в суде)",3],["to cook the books","вести чёрную бухгалтерию",1],["to cool down","охлаждать",10],["to cultivate","обрабатывать, выращивать и другие манипуляции с культурой",7],["to cure","лечить",4],["to cut supplies","сократить поставки",6],["to damage beyond repair","нанести непоправимый ущерб / разбить в хлам",3],["to deceive","обманывать, вводить в заблуждение",3],["to deny v-ing","отрицать...",2],["to deposit","вносить деньги, откладывать вещества",13],["to deprive of money","лишить денег",3],["to deter","удерживать / удерживать, отпугивать",3],["to deter from sth","удерживать от чего-либо",3],["to devour","пожирать, поглощать",13],["to dilute","разбавлять",7],["to diminish","уменьшать, ослаблять, принижать",13],["to dislocate a shoulder","вывихнуть / выбить плечо",4],["to disperse","распылять, рассеивать",7],["to distort","искажать",13],["to doze off","задремать",4],["to drop by for a cup of tea","заскочить на чашку чая",8],["to dump down into the sea","утопить в море",7],["to economise on sth","экономить на чем-то",6],["to elbow","выпихнуть, спихнуть",13],["to elbow one's way","пробивать дорогу локтями",8],["to enjoy unprecedented success","пользоваться беспрецедентным успехом",6],["to enroll","зачислять, регистрировать",6],["to erode","разъедать, разрушать",7],["to exaggerate","преувеличивать, утрировать",13],["to examine evidence","изучать доказательства",3],["to exceed the speed limit","превышать скорость",11],["to excel in","преуспевать в чем-то",6],["to explode","взрываться",7],["to exploit","эксплуатировать",3],["to extend","расширять",6],["to face the music","отвечать за свои поступки",1],["to fall in the puddle","упасть в лужу",1],["to fall into a deep sleep","погрузиться в глубокий сон",4],["to feel ashamed of","чувствовать стыд",5],["to feel dizzy","чувствовать головокружение",4],["to feel run down","чувствовать себя обессиленным",4],["to feel under the weather","плохо себя чувствовать",4],["to feel wide awake","сна ни в одном глазу, бодрствовать",5],["to flick through","бегло просматривать, пролистывать",13],["to follow the law","соблюдать закон",3],["to foot the bill","оплатить счет",1],["to forget doing sth","забыть о событии в прошлом",2],["to frighten","пугать",13],["to fulfill the tasks","выполнять задания",6],["to gain more popularity","становииться более популярным",6],["to gather crops","собирать урожай (2)",7],["to germinate","давать ростки, прорастать",7],["to get a good night's sleep","хорошенько выспатся",4],["to get accustomed","привыкнуть",13],["to get acquainted with smb","познакомиться с кем-либо",13],["to get away with a crime","избежать наказания за преступление",3],["to get on my nerves","действовать мне на нервы",1],["to get out hands","отбиться от рук",1],["to get out of hands","отбиться от рук",1],["to give advice","давать совет",1],["to give the cold shoulder","оказать холодный прием, игнорировать",1],["to give the green light","дать добро, разрешить",1],["to glister","блестеть",13],["to go barefoot","ходить босиком",7],["to go down the slope","спускаться по склону",7],["to hand out","раздавать",8],["to harvest","собирать урожай",9],["to have a blister on a heel","иметь мозоль на пятке",4],["to have a chip on your shoulder","держать обиду за прошлую неудачу, казаться обиженным, потому что с вами обошлись несправедливо",1],["to have green fingers","быть умелым садоводом",1],["to have impact on sth","иметь влияние на что-то (более сильное)",6],["to have influence on","иметь влияние на",6],["to have influence on sth","иметь влияние на что-то (послабее)",6],["to have remorse","испытывать угрызения совести, расскаиваться",1],["to have something handy","иметь что-то под рукой",8],["to have stitches in","иметь швы на чем-то",4],["to head","направить",6],["to head the list","возглавлять список",6],["to hibernate","впадать в спячку",9],["to hike","неожиданно повышаться",6],["to hit a low","достичь минимума",6],["to hit a peak","достичь максимума",6],["to hit the nail on the head","не в бровь, а в глаз",1],["to hobble","хромать (одной ногой)",4],["to hold the grudge","затаить обиду",5],["to hoodwink","обмануть, одурачить, провести",3],["to implement","выполнять, осуществлять",6],["to impose some negative ideas","навязывать какие-то негативные идеи",3],["to impose taxes","облагать налогами",6],["to influence smb","влиять на кого-либо",6],["to influence sth","влиять на что-то",6],["to inherit","наследовать",13],["to insist on v-ing","настаивать на...",2],["to insult","оскорблять, обижать (намеренно)",13],["to interfere","вмешиваться (негативное)",13],["to intervene","вмешиваться",3],["to intimidate","запугивать / запугивать, устрашать",5],["to jangle the nerves","играть на нервах",1],["to join in","принимать участие",1],["to justify","оправдывать, обосновывать",6],["to keep from doing sth","удерживать (ся), воздерживаться",1],["to keep off sth","держаться подальше от чего-то",1],["to keep on the edge","держать навзводе / на грани",1],["to keep the speed limit","соблюдать скоростной режим",11],["to keep your ear to the ground","держать ухо востро",1],["to kick the puck with the stick","ударить по шайбе клюшкой",12],["to knock on the door","постучать в дверь",8],["to launch the process","запустить процесс",6],["to lay eggs","откладывать яйца",9],["to leg behind","отставать",6],["to lessen","уменьшать",6],["to let off a thief","отпустить вора",3],["to lift the spirit","поднять дух",1],["to lift up the mood","поднять настроение",1],["to limp","хромать (двумя ногами: инвалиды, пьяные)",4],["to link to sth","связывать с чем-то",6],["to lock smb up","посадить кого-то (в тюрьму)",3],["to loiter around","слоняться без дела",3],["to look down on smb","смотреть свысока на кого-то",5],["to look several years into future","заглянуть на несколько лет вперед",6],["to look up at smb","восхищаться кем-то",5],["to loosen a screw","ослабить шуруп",13],["to lose appeal","потерять привлекательность, популярность",6],["to lose your temper","выйти из себя",5],["to make a mistake","сделать ошибку",6],["to make allowances for","принимать во внимание, учитывать",6],["to make alterations","вносить изменения",6],["to make amendments","вносить поправки",6],["to make the bed","заправлять постель",8],["to meet a demand from people","удовлетворять спрос со стороны людей",6],["to mock","издеваться, насмехаться",5],["to moisturise","увлажнять",4],["to mop","мыть пол",8],["to move up the ladder","продвигаться по карьерной лестнице",6],["to nod","кивать",13],["to nod off","клевать носом / дремать, клевать носом",4],["to nominate for sth","выдвинуть (кандидатуру) на что-либо",6],["to obey the law","подчиняться закону",3],["to obtain information","получать информацию",6],["to offend","обижать, оскорблять",3],["to overtake","обгонять",11],["to paint the town red","Уйти в загул, тусить",1],["to pass the buck","перекладывать ответственность",1],["to pass the exam with flying colours","блестяще сдать экзамен",1],["to perceive","воспринимать",13],["to plant","сажать (растение)",7],["to play a crucial part in sth","играть ключевую роль в чем-то",6],["to play prank on smb","разыграть кого-то",1],["to play truant from school","прогуливать школу",1],["to plug bottles","закупорить бутылки",10],["to plummet","стремительно падать, резко упасть",13],["to point the finger","показывать пальцем / указывать пальцем",3],["to pollinate","опылять",7],["to ponder about","поразмвшлять, обдумать",13],["to pop into the store","заскочить в магазин",8],["to pour the water","наливать воду, брызгать водой, обливать водой",10],["to present evidence","представлять доказательства",3],["to prolong the trial","продлить судебный процесс",3],["to provide an example","приводить пример",6],["to prune","подрезать деревья",7],["to pull a muscle","растянуть мышцу",4],["to pull one's leg","подшучивать над кем-то, обманывать, морочить голову",1],["to pull smb's leg","морочить голову",1],["to put a great strain on our relations","создать большую напряженность в наших отношениях",6],["to put it mildly","мягко говоря",1],["to put off doing sth","откладывать делать что-то",2],["to put off, to delay, to postpone, to procrastinate","откладывать",1],["to put smb down","унижать кого-либо",1],["to put the blame on smb","свалить вину на кого-то",3],["to rally","подняться после падения",6],["to ransom","требовать выкуп",3],["to rattle","греметь",13],["to reach decision","прийти к решению",6],["to react to","реагировать на",6],["to receive world recognition","получить всемирное признание",6],["to redraft","переписывать, пересоставить",6],["to refrain from smoking","воздержаться от курения",4],["to release a cork","вытащить пробку",10],["to remain","оставаться, находиться",6],["to remember doing sth","помнить о событии в прошлом",2],["to remind me of sth","напоминать мне что-то",13],["to rescue from","спасать от",13],["to resolve","решать (вопрос, проблему)",6],["to resucitate in order to regain consciousness","реанимировать, чтобы привести в сознание",4],["to retain","сохранять, удерживать",6],["to retire","уходить на пенсию, удаляться",6],["to revolve around money","вращаться вокруг денег",6],["to ripen","созревать",7],["to roam","бродить, скитаться",7],["to roar with laughter","хохотать во все горло",1],["to run a trial","вести дело",3],["to run down a pedestrian","сбить пешехода",11],["to sag","провисать, прогибаться",13],["to sail through the project","легко пройти через проект",1],["to save for a rainy day","откладывать на черный день",1],["to score a goal","забить гол",12],["to see off","провожать",1],["to serve a 10-year term in prison","отсидеть 10-летний срок в тюрьме",3],["to set a goal","поставить цель",6],["to set out un a journey","отправиться в путешествие",13],["to sew","шить",8],["to shed","сбрасывать кожу",9],["to shoulder the responsibility","брать на себя ответственность",6],["to slash","урезать",6],["to sleep like a log","спать как убитый",4],["to sleep rough","ночевать на улице",8],["to sleep soundly","крепко спать",4],["to slump","сильно упасть",6],["to smack children","пороть детей",3],["to snap sth up","урвать, купить по дешевке",1],["to snore","храпеть",4],["to soar","стремительно повышаться",6],["to soften edges","сглаживать углы",1],["to sort sth out","разбираться с чем-либо, улаживать что-либо",6],["to sow","сеять",7],["to spend time on","тратить время на",13],["to spill","проливать, просыпать",13],["to spill the beans","выдать секрет, проболтаться",1],["to spit","плевать",13],["to splash out on sth","спустить все деньги на что-либо",13],["to spot the problem","обозначить проблему",6],["to sprain a knee","вывихнуть / растянуть колено",4],["to sprain my leg","растянуть мою ногу",4],["to spread gossip","распространять сплетни",1],["to spread rumours","распространять слухи",1],["to squeak","пищать, скрипеть",13],["to start from scratch","начинать с нуля",6],["to state the verdict","огласить вердикт",3],["to steer","направлять, управлять",6],["to stick the plan","придерживаться плана",6],["to sting","жалить",13],["to strengthen","укреплять",6],["to struggle","бороться",6],["to stuck","застрять",13],["to submit","представлять на рассмотрение",6],["to suggest v-ing","предлагать...",2],["to supply","поставлять, снабжать",6],["to suppress a person","подавлять человека",5],["to suspect smb of sth","подозревать кого-либо в чем-либо",3],["to swallow","глотать",4],["to sweep","подметать",8],["to swot for exam","зубрить к экзамену",13],["to tackle the issue","решить проблему",6],["to tackle the problem","решать проблему",6],["to take a nap","вздремнуть",4],["to take a notice of","обращать внимание на",13],["to take advantage of","воспользоваться преимуществом",13],["to take an instant dislike to smb","невзлюбить кого-л. с первого взгляда",5],["to take pains","прилагать усилия",13],["to take up a new hobby","заняться новым хобби",13],["to talk about them behind their backs","говорить о них за их спинами",1],["to tame","приручать, дрессировать",9],["to tear the ligaments in your ankle","порвать связки лодыжки",4],["to tease","дразнить",5],["to terminate the contract","расторгнуть контракт",6],["to terminate the trial","прекратить судебное разбирательство",3],["to think long and hard","хорошенько подумать",6],["to throw a party","устроить вечеринку",8],["to throw the litter","бросать мусор",8],["to throw up","тошнить",4],["to tie","связывать",13],["to tie my laces","завязать мои шнурки",8],["to tighten a screw","закручивать шуруп",13],["to top-up my account","пополнить мой счет",8],["to transplant","пересаживать",4],["to try on clothes","примерять одежду",8],["to tune yourself to","настроить себя на чтото",2],["to turn a blind eye to","закрывать глаза, смотреть сквозь пальцы",1],["to turn a blind eye to something","закрыть глаза на что-то",1],["to turn back on smb","отвернуться от кого-то, повернуться к кому-то спиной",1],["to twist a wrist","вывихнуть запястье",4],["to unwind","расслабиться, развеяться",8],["to vary","разнообразить, отличать",6],["to violate the law / to break the law","нарушить закон",3],["to vomit","тошнить, рвать",4],["to warn","предупреждать",6],["to wipe sth off sth","стирать, полностью убирать что-то откуда-то",13],["to witness","свидетельствовать, давать показания",3],["toil","тяжелый труд",4],["torrential shower","проливной дождь",7],["tough","жесткий, трудный",5],["touristy","переполненный туристами, туристический",5],["track-and-fields","легкая атлетика",12],["transparent","прозрачный, очевидный",6],["trap","капкан, ловушка, обман",3],["trapped","в ловушке",3],["treason","государственная измена",3],["trespassing","вторжение в частную собственность",3],["trial","судебный процесс",3],["trot","шпаргалка",5],["trumpet","труба (муз.)",12],["trunk","багажник",8],["trustworthy","надежный, заслуживающий доверия",5],["turbulence","волнения, беспорядки, турбулентность, вихрь",7],["turmoil","смятение, беспорядок",5],["turn signal","поворотник",11],["turquoise","бирюза",7],["typical of","типичный для",6],["unconditional","безусловный",6],["unconventional","нетрадиционный, нешаблонный",5],["underrated","недооцененный",5],["uninhabited","необитаемый, нежилой",7],["unspoilt","неиспорченный",7],["upbringing","воспитание",8],["variety","разнообразие",6],["various","различный, разнообразный",6],["vehicle","транспортное средство",11],["venue","место проведения мероприятия",8],["vice versa","наоборот",1],["violent storm","сильный шторм",7],["vocational","профессиональный",6],["volatile","непостоянный, изменчивый",5],["volcanic eruption","извержение вулкана",7],["wait and see","поживем — увидим",1],["walnut","грецкий орех",13],["walrus","морж",9],["warning","предупреждение",13],["wart","бородавка",4],["weird","странный",5],["What I find amazing is that","Что я нахожу удивительным, так это то, что...",2],["whisk","венчик",10],["willow","ива, ивовый",9],["wind instrument","духовой инструмент",12],["windshield","лобовое стекло",11],["windshield wipers","дворники",11],["wisdom","мудрость",5],["wise","мудрый",5],["with the exception of sth","за исключением чего-то",1],["within walking distance of the hotel","в шаговой доступности от отеля",8],["wreath","венок",8],["wrench","гаечный ключ",8],["yam","батат",10],["yeast","дрожжи",10]];
+
+const TOPICS = [
+  "All Topics","Idioms & Phrases","Grammar Patterns","Crime & Law",
+  "Health & Body","Emotions & Character","Business & Work",
+  "Nature & Environment","Home & Everyday Life","Plants & Animals",
+  "Food & Cooking","Transport & Vehicles","Arts, Music & Sport","General Vocabulary"
+];
+const EMOJI = ["📚","💬","📝","⚖️","🏥","😊","💼","🌿","🏠","🐾","🍽️","🚗","🎵","📖"];
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+const KS="fc_srs_v1", KM="fc_meta_v1", KC="fc_custom_v1";
+function sg(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+// ── SRS ───────────────────────────────────────────────────────────────────────
+function todayStr(){return new Date().toISOString().split("T")[0]}
+function addDays(base,n){const d=new Date(base+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().split("T")[0]}
+function sm2(card,q){
+  let{interval:iv=0,ease:ez=2.5,reps=0,lapses=0}=card||{};
+  const t=todayStr();
+  if(q<3)return{interval:1,ease:Math.max(1.3,ez-.2),reps:0,lapses:lapses+1,due:addDays(t,1)};
+  let ni=reps===0?1:reps===1?4:Math.round(iv*ez);
+  let ne=Math.max(1.3,ez+.1-(5-q)*(.08+(5-q)*.02));
+  return{interval:ni,ease:ne,reps:reps+1,lapses,due:addDays(t,ni)};
+}
+function nextInterval(card,q){return sm2(card,q).interval}
+
+// ── ANSWER CHECK ──────────────────────────────────────────────────────────────
+function norm(s){return s.toLowerCase().trim().replace(/\s+/g," ").replace(/[.,!?]/g,"")}
+function checkAnswer(input,correct){
+  const inp=norm(input);
+  return correct.split(" / ").map(a=>norm(a.trim())).some(a=>a===inp);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let state={
+  screen:"home",
+  srs:sg(KS)||{},
+  meta:sg(KM)||{newPerDay:20,topic:0},
+  custom:sg(KC)||[],
+  queue:[],qi:0,
+  typed:"",submitted:false,isOk:false,
+  sok:0,sfail:0,
+  addE:"",addR:"",addMsg:""
+};
+
+function allWords(){
+  const base=W.map(([e,r,t],i)=>({id:i,e,r,t}));
+  const cust=state.custom.map((w,i)=>({id:10000+i,e:w.e,r:w.r,t:0}));
+  return [...base,...cust];
+}
+
+function buildQ(){
+  const words=allWords(), today=todayStr(), tf=state.meta.topic;
+  const inT=w=>tf===0||w.t===tf;
+  const due=words.filter(w=>inT(w)&&state.srs[w.id]?.due&&state.srs[w.id].due<=today);
+  const newW=words.filter(w=>inT(w)&&!state.srs[w.id]).slice(0,state.meta.newPerDay);
+  return [...due.sort(()=>Math.random()-.5),...newW];
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  document.getElementById("app").innerHTML=screens[state.screen]();
+  bind();
+}
+
+function h(tag,cls,inner,extra=""){
+  return `<${tag} class="${cls}" ${extra}>${inner}</${tag}>`;
+}
+
+// ── HOME SCREEN ───────────────────────────────────────────────────────────────
+screens={};
+screens.home=function(){
+  const words=allWords(), tf=state.meta.topic;
+  const inT=w=>tf===0||w.t===tf;
+  const tw=words.filter(inT);
+  const learned=tw.filter(w=>(state.srs[w.id]?.reps||0)>=2).length;
+  const dueQ=buildQ();
+  const due=dueQ.length;
+
+  const pills=TOPICS.map((t,i)=>{
+    const cnt=i===0?words.length:words.filter(w=>w.t===i).length;
+    const active=state.meta.topic===i?"active":"";
+    return `<button class="topic-pill ${active}" data-topic="${i}">${EMOJI[i]} ${t} <span style="opacity:.55;font-size:11px">(${cnt})</span></button>`;
+  }).join("");
+
+  return `<div class="page">
+  <div class="divider">
+    <div>
+      <div class="label" style="margin-bottom:3px">Spaced repetition · typing</div>
+      <h1>Flashcard Trainer</h1>
+    </div>
+    <button class="btn btn-outline btn-small" data-action="showInfo">📱 iPhone</button>
+  </div>
+
+  <div class="label" style="margin-bottom:7px">Topic</div>
+  <div class="topic-scroll">${pills}</div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="stat-num" style="color:#1a1a2e">${tw.length}</div><div class="stat-lbl">Words</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:#2a6e5a">${learned}</div><div class="stat-lbl">Learned</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:${due>0?"#c0392b":"#7a7060"}">${due}</div><div class="stat-lbl">Due now</div></div>
+  </div>
+
+  <button class="btn btn-full ${due>0?"btn-dark":"btn-outline"}" style="margin-bottom:10px;${due===0?"opacity:.5":""}" data-action="start">
+    ${due>0?`▶  Start session (${due} cards)`:"✓  Nothing due today"}
+  </button>
+  <button class="btn btn-full btn-outline" style="margin-bottom:1.5rem" data-action="goAdd">+ Add word / phrase</button>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:13px;font-weight:600">New cards per day</span>
+      <span style="font-size:17px;font-weight:600;color:#2a6e5a" id="npdLabel">${state.meta.newPerDay}</span>
+    </div>
+    <input type="range" min="5" max="50" step="5" value="${state.meta.newPerDay}" id="npdRange">
+    <p style="font-size:11px;color:#7a7060;margin-top:5px">These are review words — you've seen them all in lessons.</p>
+  </div>
+</div>`;
+};
+
+// ── STUDY SCREEN ──────────────────────────────────────────────────────────────
+screens.study=function(){
+  const w=state.queue[state.qi];
+  if(!w) return screens.done();
+  const pct=Math.round(state.qi/state.queue.length*100);
+  const isNew=!state.srs[w.id];
+
+  let inputArea;
+  if(!state.submitted){
+    inputArea=`
+    <input type="text" id="answerInput" value="${state.typed.replace(/"/g,'&quot;')}" placeholder="type here…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="btn btn-dark btn-full" style="margin-top:10px" data-action="submit">Check ↵</button>`;
+  } else {
+    const resClass=state.isOk?"result-ok":"result-fail";
+    const resColor=state.isOk?"#2a6e5a":"#c0392b";
+    const resText=state.isOk?"✓ Correct!":"✗ Not quite";
+    const wrongLine=!state.isOk?`<p style="margin:3px 0 0;font-size:14px;color:#1a1a2e">Answer: <strong>${esc(w.e)}</strong></p>`:"";
+    const c=state.srs[w.id];
+    inputArea=`
+    <div class="${resClass}">
+      <p style="margin:0;font-size:14px;font-weight:600;color:${resColor}">${resText}</p>
+      ${wrongLine}
+    </div>
+    <p class="label" style="margin-bottom:7px">How well did you know it?</p>
+    <div class="rate-grid">
+      <button class="rate-btn" style="background:#c0392b" data-rate="1">Again<br><span style="font-size:10px;font-weight:400">1d</span></button>
+      <button class="rate-btn" style="background:#2a6e5a" data-rate="4">Good<br><span style="font-size:10px;font-weight:400">${nextInterval(c,4)}d</span></button>
+      <button class="rate-btn" style="background:#1a6a8a" data-rate="5">Easy<br><span style="font-size:10px;font-weight:400">${nextInterval(c,5)}d</span></button>
+    </div>`;
+  }
+
+  return `<div class="page">
+  <div class="session-header">
+    <span>${state.qi}/${state.queue.length}</span>
+    <span><span style="color:#2a6e5a">✓ ${state.sok}</span>  <span style="color:#c0392b">✗ ${state.sfail}</span></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+
+  <div class="card-study">
+    ${isNew?'<div class="new-badge">new word</div>':''}
+    <p class="label" style="margin-bottom:8px">Type the English:</p>
+    <p style="font-size:21px;font-weight:600;color:#1a1a2e;margin-bottom:1.5rem;line-height:1.3">${esc(w.r)}</p>
+    ${inputArea}
+  </div>
+  <button class="btn btn-outline btn-small" data-action="goHome">← Home</button>
+</div>`;
+};
+
+// ── DONE SCREEN ───────────────────────────────────────────────────────────────
+screens.done=function(){
+  const total=state.sok+state.sfail;
+  return `<div class="page-center">
+  <p style="font-size:44px;margin-bottom:8px">🎉</p>
+  <h2 style="margin-bottom:8px">Session complete!</h2>
+  ${total>0?`<p class="muted" style="font-size:14px;margin-bottom:1.5rem"><span style="color:#2a6e5a">✓ ${state.sok}</span> correct · <span style="color:#c0392b">✗ ${state.sfail}</span> incorrect</p>`
+           :`<p class="muted" style="font-size:14px;margin-bottom:1.5rem">Nothing due — come back tomorrow!</p>`}
+  <button class="btn btn-dark" style="padding:11px 32px" data-action="goHome">Back to home</button>
+</div>`;
+};
+
+// ── ADD SCREEN ────────────────────────────────────────────────────────────────
+screens.add=function(){
+  const recent=[...state.custom].reverse().slice(0,10);
+  const list=recent.length?`<div style="margin-top:1.2rem">
+    <p class="label" style="margin-bottom:6px">Your added words (${state.custom.length})</p>
+    ${recent.map(w=>`<div class="word-list-item"><span style="font-weight:600">${esc(w.e)}</span><span class="muted">${esc(w.r)}</span></div>`).join("")}
+  </div>`:"";
+
+  return `<div class="page">
+  <button class="btn btn-outline btn-small" style="margin-bottom:1.5rem" data-action="goHome">← Back</button>
+  <h2 style="margin-bottom:1.2rem">Add a word or phrase</h2>
+  <div class="card">
+    <label class="field-label">English word / phrase</label>
+    <input type="text" id="addE" value="${esc(state.addE)}" placeholder="e.g. to burst into tears" autocorrect="off" autocapitalize="off" style="margin-bottom:12px">
+    <label class="field-label">Russian translation</label>
+    <input type="text" id="addR" value="${esc(state.addR)}" placeholder="e.g. расплакаться" style="margin-bottom:14px">
+    <button class="btn btn-green btn-full" data-action="saveWord">Save word</button>
+    ${state.addMsg?`<p style="margin-top:8px;font-size:13px;text-align:center;color:${state.addMsg.startsWith("✓")?"#2a6e5a":"#c0392b"}">${esc(state.addMsg)}</p>`:""}
+  </div>
+  ${list}
+</div>`;
+};
+
+// ── INFO SCREEN ───────────────────────────────────────────────────────────────
+screens.info=function(){
+  const steps=[
+    ["Create a free GitHub account","github.com → Sign up"],
+    ["Create a new public repository","Click + → New repository → name it e.g. \"flashcards\" → Public → Create"],
+    ["Upload this HTML file as index.html","In your repo → Add file → Upload files → rename the file to index.html → Commit"],
+    ["Enable GitHub Pages","Settings → Pages → Source: Deploy from branch → main → / (root) → Save"],
+    ["Open the URL on your iPhone","Your URL: username.github.io/flashcards/"],
+    ["Add to home screen","Safari → Share button (□↑) → Add to Home Screen → Add"],
+  ];
+  return `<div class="page">
+  <button class="btn btn-outline btn-small" style="margin-bottom:1.5rem" data-action="goHome">← Back</button>
+  <h2 style="margin-bottom:1rem">📱 Add to iPhone home screen</h2>
+  <div class="card" style="margin-bottom:1rem">
+    <p style="font-size:13px;color:#7a7060;line-height:1.7">To install as an app on iPhone, the file needs to be hosted online. The easiest free option is <strong style="color:#1a1a2e">GitHub Pages</strong>:</p>
+  </div>
+  ${steps.map(([t,d],i)=>`<div class="info-step">
+    <div class="info-num">${i+1}</div>
+    <div><p style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:2px">${t}</p><p style="font-size:12px;color:#7a7060">${d}</p></div>
+  </div>`).join("")}
+  <div class="info-box"><strong>Note:</strong> Progress is saved in your browser's localStorage — it stays on the device. It won't sync between your phone and computer.</div>
+</div>`;
+};
+
+// ── ESCAPE ────────────────────────────────────────────────────────────────────
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+
+// ── BIND EVENTS ───────────────────────────────────────────────────────────────
+function bind(){
+  // Range slider
+  const rng=document.getElementById("npdRange");
+  if(rng){
+    rng.addEventListener("input",e=>{
+      state.meta.newPerDay=Number(e.target.value);
+      ss(KM,state.meta);
+      const lbl=document.getElementById("npdLabel");
+      if(lbl) lbl.textContent=e.target.value;
+    });
+  }
+
+  // Answer input
+  const inp=document.getElementById("answerInput");
+  if(inp){
+    inp.focus();
+    inp.addEventListener("input",e=>{state.typed=e.target.value});
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSubmit()}});
+  }
+  const addE=document.getElementById("addE");
+  const addR=document.getElementById("addR");
+  if(addE) addE.addEventListener("input",e=>{state.addE=e.target.value});
+  if(addR){
+    addR.addEventListener("input",e=>{state.addR=e.target.value});
+    addR.addEventListener("keydown",e=>{if(e.key==="Enter") doSaveWord()});
+  }
+
+  // Topic pills
+  document.querySelectorAll("[data-topic]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      state.meta.topic=Number(el.dataset.topic);
+      ss(KM,state.meta);
+      render();
+    });
+  });
+
+  // Buttons
+  document.querySelectorAll("[data-action]").forEach(el=>{
+    el.addEventListener("click",()=>actions[el.dataset.action]&&actions[el.dataset.action]());
+  });
+
+  // Rate buttons
+  document.querySelectorAll("[data-rate]").forEach(el=>{
+    el.addEventListener("click",()=>doRate(Number(el.dataset.rate)));
+  });
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+const actions={
+  start(){
+    const q=buildQ();
+    if(!q.length){state.screen="done";state.sok=0;state.sfail=0;render();return}
+    state.queue=q;state.qi=0;state.typed="";state.submitted=false;state.isOk=false;
+    state.sok=0;state.sfail=0;state.screen="study";render();
+  },
+  goHome(){state.screen="home";render()},
+  goAdd(){state.addE="";state.addR="";state.addMsg="";state.screen="add";render()},
+  showInfo(){state.screen="info";render()},
+  submit(){doSubmit()},
+  saveWord(){doSaveWord()},
+};
+
+function doSubmit(){
+  const inp=document.getElementById("answerInput");
+  const typed=inp?inp.value:state.typed;
+  if(!typed.trim()||state.submitted) return;
+  const w=state.queue[state.qi];
+  const ok=checkAnswer(typed,w.e);
+  state.typed=typed;state.isOk=ok;state.submitted=true;
+  if(ok) state.sok++; else state.sfail++;
+  render();
+}
+
+function doRate(q){
+  const w=state.queue[state.qi];
+  const upd=sm2(state.srs[w.id],q);
+  state.srs={...state.srs,[w.id]:upd};
+  ss(KS,state.srs);
+  const nx=state.qi+1;
+  if(nx>=state.queue.length){state.screen="done";render();return}
+  state.qi=nx;state.typed="";state.submitted=false;state.isOk=false;
+  render();
+}
+
+function doSaveWord(){
+  const e=(document.getElementById("addE")||{value:state.addE}).value.trim();
+  const r=(document.getElementById("addR")||{value:state.addR}).value.trim();
+  if(!e||!r){state.addMsg="Fill in both fields.";render();return}
+  state.custom=[...state.custom,{e,r}];
+  ss(KC,state.custom);
+  state.addE="";state.addR="";state.addMsg=`✓ "${e}" saved!`;
+  render();
+  setTimeout(()=>{state.addMsg="";render()},3000);
+}
+
+// ── START ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
